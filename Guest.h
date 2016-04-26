@@ -16,6 +16,9 @@ class Guest
         std::thread t;
 
         void checkin(){
+            //can transfer via a public static variable since only one transaction happens at a time
+            //better and easier than piping, pipes are only for seperate processes
+            
             sem_wait(&Globals::s_rooms);
 
             //cout is threadsafe, but multistep operations can interleave mid line, prevent that by building the string before outputting it
@@ -25,7 +28,8 @@ class Guest
             stream.str("");
 
             sem_wait(&Globals::s_checkin);
-
+            
+            //Post id of current guest in checkin
             Globals::guestidin = id;
 
             sem_post(&Globals::s_checkin_guest_id);
@@ -36,8 +40,7 @@ class Guest
 
             sem_wait(&Globals::s_checkin_assign_room);
 
-            //can transfer via a public static variable since only one transaction happens at a time
-            //better and easier than piping, pipes are only for seperate processes
+            //Get room of current guest in checkin
             room = Globals::roomidin;           
 
             stream << "Guest " << id << " recieves room " << room << std::endl;
@@ -47,8 +50,8 @@ class Guest
             enjoystay();
         }
         void enjoystay() {
-            //Doesn't make sense, but this results in 0-3?
-            int rand = std::rand() % 5;
+            //results in even distribution of 0-3 integers
+            int rand = std::rand() % 4;
             std::stringstream stream;
             switch (rand)
             {
@@ -77,7 +80,8 @@ class Guest
                     businesscount++;
                     break;
             }
-            rand = std::rand() % 3;
+            //Each thread waits either 1, 2, or 3 seconds
+            rand = (std::rand() % 3) + 1;
             std::this_thread::sleep_for(std::chrono::seconds(rand));
 
             checkout();
@@ -92,6 +96,7 @@ class Guest
             std::cout << stream.str();
             stream.str("");
 
+            //Post room and id of current guest in checkout
             Globals::guestidout = id;
             Globals::roomidout = room;
 
@@ -109,7 +114,8 @@ class Guest
 
         }
     public:
-        static int currentguest;
+        //counters to keep track of each activity
+        static int totalguests;
         static int poolcount;
         static int restrauntcount;
         static int fitnesscount;
@@ -121,6 +127,7 @@ class Guest
         }   
         void joinline() {
             t = std::thread(&Guest::checkin, this);
+            totalguests++;
         }   
         void waitthread() {
             t.join();

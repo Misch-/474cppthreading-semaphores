@@ -11,13 +11,17 @@
 class CheckinEmployee
 {
     private:
+        //Create an array to keep track of what rooms are open
         int availablerooms[5] = {1,1,1,1,1};
+        //Store employee thread reference on creation
         std::thread t;
+        //Changes to false to end thread
         bool cont;
 
         void checkin() {
                 while (cont) {
                     sem_wait(&Globals::s_checkin_guest_id);
+                    //get id of current guest at checkin
                     int id = Globals::guestidin; 
 
                     //cout is threadsafe, but multistep operations can interleave mid line, prevent that by building the string before outputting it
@@ -31,6 +35,7 @@ class CheckinEmployee
                     for (i=0; i<5; i++) {
                         if (availablerooms[i] == 1) {
                             availablerooms[i] = 0;
+                            //post room of current guest at checkin
                             Globals::roomidin = i + 1;
                             break;
                         }

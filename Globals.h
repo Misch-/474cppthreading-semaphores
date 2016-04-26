@@ -11,6 +11,7 @@
 class Globals
 {
     public:
+        //Static global variables to be accessed from any class
         static sem_t s_checkin;  
         static sem_t s_checkin_assign_room;  
         static sem_t s_checkin_guest_id;  

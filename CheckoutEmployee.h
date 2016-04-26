@@ -11,12 +11,16 @@
 class CheckoutEmployee
 {
     private:
+        //Store thread reference upon creation
         std::thread t;
+        //Changes to false when thread should end
         bool cont;
 
         void checkout() {
             while (cont) {
                 sem_wait(&Globals::s_checkout_idroom);
+                
+                //Get room and id of current guest in checkout
                 int id = Globals::guestidout;
                 int room = Globals::roomidout;
 
